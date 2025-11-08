@@ -46,14 +46,14 @@ public class Huesped {
 	private String apellido;
 	
 	@Column(name = "EMAIL", length = 100, nullable = false, unique = true)
-	@Size(min = 20, max = 100)
+	@Size(min = 1, max = 100, message = "El email debe tener entre 1 y 100 caracteres")
 	@NotBlank(message = "El email es requerido")
 	@Email(message = "El email debe de tener un formato válido")
 	private String email;
 	
-	@Column(name = "EMAIL", length = 100, nullable = false)
-	@Size(min = 20, max = 100)
-	@NotBlank(message = "El email es requerido")
+	@Column(name = "TELEFONO", length = 10, nullable = false)
+	@Size(min = 10, max = 10, message = "El teléfono debe tener 10 dígitos")
+	@NotBlank(message = "El teléfono es requerido")
 	@Pattern(regexp = "^[0-9]{10}$", message = "El teléfono debe contener solo 10 dígitos numéricos")
 	private String telefono;
 	
