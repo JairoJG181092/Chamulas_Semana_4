@@ -219,3 +219,8 @@ application-dev.properties
 *.snap
 /.metadata
 /.metadata
+.metadata/.plugins/org.eclipse.core.resources/.projects/.org.eclipse.egit.core.cmp/.markers.snap
+.metadata/.plugins/org.eclipse.core.resources/.projects/msv-huespedes/.indexes/history.index
+.metadata/.plugins/org.eclipse.jdt.core/1446723968.index
+.metadata/.plugins/org.eclipse.jdt.core/1865786562.index
+.metadata/.plugins/org.eclipse.m2e.jdt/msv-reservaciones.container
