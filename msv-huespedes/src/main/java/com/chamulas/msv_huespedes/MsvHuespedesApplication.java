@@ -1,4 +1,4 @@
-package com.chamulas.huespedes;
+package com.chamulas.msv_huespedes;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

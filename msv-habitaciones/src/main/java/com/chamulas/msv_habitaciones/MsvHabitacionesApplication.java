@@ -1,13 +1,13 @@
-package com.chamulas.huespedes;
+package com.chamulas.msv_habitaciones;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MsvHuespedesApplication {
+public class MsvHabitacionesApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MsvHuespedesApplication.class, args);
+		SpringApplication.run(MsvHabitacionesApplication.class, args);
 	}
 
 }
