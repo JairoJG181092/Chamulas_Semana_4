@@ -1,4 +1,4 @@
-// UpdateHabitacionRequest.java
+// HabitacionRequest.java
 package com.chamulas.commons.dto;
 
 import com.chamulas.commons.enums.EstadoHabitacion;

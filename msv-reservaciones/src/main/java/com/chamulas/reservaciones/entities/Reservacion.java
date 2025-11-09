@@ -63,15 +63,17 @@ public class Reservacion {
     
     @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion = LocalDateTime.now();
-    
+
+    // Método de validación personalizada
     @AssertTrue(message = "La fecha de salida debe ser posterior a la fecha de entrada")
     public boolean isFechasValidas() {
         if (fechaEntrada == null || fechaSalida == null) {
-            return true;
+            return true; // La validación @NotNull ya maneja esto
         }
         return fechaSalida.isAfter(fechaEntrada);
     }
 
+    // Setter personalizado para estado que actualiza fechaActualizacion
     public void setEstado(EstadoReserva estado) {
         this.estado = estado;
         this.fechaActualizacion = LocalDateTime.now();

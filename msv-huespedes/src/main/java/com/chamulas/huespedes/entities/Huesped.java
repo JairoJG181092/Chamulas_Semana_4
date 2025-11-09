@@ -1,28 +1,15 @@
 package com.chamulas.huespedes.entities;
 
-import java.time.LocalDateTime;
-
+import com.chamulas.commons.enums.Nacionalidad;
 import com.chamulas.commons.enums.TipoDocumento;
-
-import jakarta.annotation.Nonnull;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import lombok.ToString;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "huespedes")
@@ -30,8 +17,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Huesped {
-	@Id
+    
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
@@ -55,17 +44,21 @@ public class Huesped {
     @Column(nullable = false, unique = true, length = 20)
     private String telefono;
     
+    @NotBlank(message = "El número de documento es obligatorio")
+    @Size(min = 5, max = 50, message = "El documento debe tener entre 5 y 50 caracteres")
+    @Column(name = "numero_documento", nullable = false, length = 50)
+    private String numeroDocumento;
+    
     @NotNull(message = "El tipo de documento es obligatorio")
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_documento", nullable = false, length = 30)
     private TipoDocumento tipoDocumento;
     
-    @NotBlank(message = "La nacionalidad es obligatoria")
-    @Size(min = 2, max = 100, message = "La nacionalidad debe tener entre 2 y 100 caracteres")
-    @Column(nullable = false, length = 100)
-    private String nacionalidad;
+    @NotNull(message = "La nacionalidad es obligatoria")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private Nacionalidad nacionalidad;
     
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro = LocalDateTime.now();
-
 }

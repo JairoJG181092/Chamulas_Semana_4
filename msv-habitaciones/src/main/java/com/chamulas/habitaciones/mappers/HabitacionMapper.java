@@ -4,7 +4,6 @@ package com.chamulas.habitaciones.mappers;
 import com.chamulas.habitaciones.entities.Habitacion;
 import com.chamulas.commons.dto.HabitacionRequest;
 import com.chamulas.commons.dto.HabitacionResponse;
-
 import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,6 +56,7 @@ public class HabitacionMapper {
         habitacion.setDescripcion(request.getDescripcion());
         habitacion.setPrecio(request.getPrecio());
         habitacion.setCapacidad(request.getCapacidad());
+        
         
         return habitacion;
     }
