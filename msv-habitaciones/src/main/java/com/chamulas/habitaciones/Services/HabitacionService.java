@@ -1,4 +1,4 @@
-package com.chamulas.habitaciones.Services;
+package com.chamulas.habitaciones.services;
 
 import com.chamulas.habitaciones.entities.Habitacion;
 
