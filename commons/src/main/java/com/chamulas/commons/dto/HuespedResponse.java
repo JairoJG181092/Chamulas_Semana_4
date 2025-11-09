@@ -1,6 +1,6 @@
 package com.chamulas.commons.dto;
 
-import com.chamulas.commons.enums.Documento;
+import com.chamulas.commons.enums.TipoDocumento;
 import com.chamulas.commons.enums.Nacionalidad;
 
 public record HuespedResponse(
@@ -9,7 +9,7 @@ public record HuespedResponse(
 		String apellido,
 		String email,
 		String telefono,
-		Documento documento,
+		TipoDocumento documento,
 		Nacionalidad nacionalidad
 		) {
 

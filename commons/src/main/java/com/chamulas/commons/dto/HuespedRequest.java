@@ -1,6 +1,6 @@
 package com.chamulas.commons.dto;
 
-import com.chamulas.commons.enums.Documento;
+import com.chamulas.commons.enums.TipoDocumento;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -32,7 +32,7 @@ public record HuespedRequest(
 		
 		@NotNull(message= "El documento es requerido")
         @Positive(message = "El documento debe ser positivo")
-		Documento documento,
+		TipoDocumento documento,
 		
 		@NotNull(message= "La nacionalidad es requerida")
 		String nacionalidad

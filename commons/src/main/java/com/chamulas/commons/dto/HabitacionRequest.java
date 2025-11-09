@@ -1,34 +1,41 @@
+// HabitacionRequest.java
 package com.chamulas.commons.dto;
 
+import com.chamulas.commons.enums.EstadoHabitacion;
 import com.chamulas.commons.enums.TipoHabitacion;
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-
-public record HabitacionRequest(
-		
-		@NotNull(message = "El número de habitación es requerido")
-		@Min(value=1, message = "El número debe ser mayor o igua a 1")
-		Short numero,
-		
-		@NotNull(message = "El tipo de habitación es requerido")
-		TipoHabitacion tipo,
-		
-		
-		String descripcion,
-		
-		@NotNull(message = "El precio es requerido")
-		@Positive(message="El precio debe ser positivo")
-		Double precio,
-		
-		@NotNull(message ="Es necesario otorgar la capacidad de la recamara")
-		@Min(value=1, message="La capacidad mínima de la habitación es 1")
-		Short capacidad,
-		
-		@NotNull(message = "El  estado de la habitación es necesario")
-		Long estado
-		
-		) {
-
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+public class HabitacionRequest {
+    
+    @NotNull(message = "El número de habitación es obligatorio")
+    @Positive(message = "El número de habitación debe ser mayor a 0")
+    private Long numero;
+    
+    @NotNull(message = "El tipo de habitación es obligatorio")
+    private TipoHabitacion tipo;
+    
+    @Size(max = 500, message = "La descripción no puede exceder los 500 caracteres")
+    private String descripcion;
+    
+    @NotNull(message = "El precio es obligatorio")
+    @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0")
+    private Double precio;
+    
+    @NotNull(message = "La capacidad es obligatoria")
+    @Min(value = 1, message = "La capacidad mínima es 1")
+    @Max(value = 10, message = "La capacidad máxima es 10")
+    private Long capacidad;
+    
+    @NotNull(message = "El estado es obligatorio")
+    private EstadoHabitacion estado;
 }
