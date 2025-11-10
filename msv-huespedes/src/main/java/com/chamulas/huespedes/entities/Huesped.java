@@ -44,21 +44,14 @@ public class Huesped {
     @Column(nullable = false, unique = true, length = 20)
     private String telefono;
     
-    @NotBlank(message = "El número de documento es obligatorio")
-    @Size(min = 5, max = 50, message = "El documento debe tener entre 5 y 50 caracteres")
-    @Column(name = "numero_documento", nullable = false, length = 50)
-    private String numeroDocumento;
-    
     @NotNull(message = "El tipo de documento es obligatorio")
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_documento", nullable = false, length = 30)
+    @Column(name = "tipoDocumento", nullable = false, length = 30)
     private TipoDocumento tipoDocumento;
     
     @NotNull(message = "La nacionalidad es obligatoria")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private Nacionalidad nacionalidad;
-    
-    @Column(name = "fecha_registro")
-    private LocalDateTime fechaRegistro = LocalDateTime.now();
+
 }

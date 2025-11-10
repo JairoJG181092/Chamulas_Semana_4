@@ -23,8 +23,7 @@ public class HabitacionMapper {
             entity.getDescripcion(),
             entity.getPrecio(),
             entity.getCapacidad(),
-            entity.getEstado(),
-            entity.getFechaCreacion()
+            entity.getEstado()
         );
     }
 
@@ -40,8 +39,7 @@ public class HabitacionMapper {
             response.getDescripcion(),
             response.getPrecio(),
             response.getCapacidad(),
-            response.getEstado(),
-            response.getFechaCreacion()
+            response.getEstado()
         );
     }
 
