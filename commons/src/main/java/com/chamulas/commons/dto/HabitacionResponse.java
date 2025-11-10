@@ -24,5 +24,4 @@ public class HabitacionResponse {
     private Double precio;
     private Long capacidad;
     private EstadoHabitacion estado;
-    private LocalDateTime fechaCreacion;
 }
