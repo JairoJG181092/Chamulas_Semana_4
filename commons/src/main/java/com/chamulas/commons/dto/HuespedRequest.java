@@ -1,41 +1,42 @@
+// HuespedRequest.java
 package com.chamulas.commons.dto;
 
-import com.chamulas.commons.enums.Documento;
+import com.chamulas.commons.enums.Nacionalidad;
+import com.chamulas.commons.enums.TipoDocumento;
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
-
-public record HuespedRequest(
-		
-		@NotBlank(message = "El nombre es requerido")
-		@Size(min=10,max=50, message="El nombre debe tener minimo 10 caracteres")
-		String nombre,
-		
-		@NotBlank(message = "El apellido es requerido")
-		@Size(min=10,max=70, message="El apellido debe tener minimo 10 caracteres, Pa que se apellidan Peréz!!")
-		String apellido,
-		
-		@NotBlank(message = "El email es requerido")
-		@Size(min=1, max=10, message="El email debe tener entre 1 y 100 caracteres")
-		@Email(message = "El email debe tener el formato correcto (correo@dominio)")
-		String email,
-		
-
-		@NotBlank(message = "El telefono es requerido")
-		@Size(min = 10, max = 10, message = "El teléfono debe tener exactamente 10 dígitos")
-		@Pattern(regexp = "^[0-9]{10}$", message = "Solo 10 dígitos númericos")
-		String telefono,
-		
-		@NotNull(message= "El documento es requerido")
-        @Positive(message = "El documento debe ser positivo")
-		Documento documento,
-		
-		@NotNull(message= "La nacionalidad es requerida")
-		String nacionalidad
-		) {
-
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+public class HuespedRequest {
+    
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
+    private String nombre;
+    
+    @NotBlank(message = "El apellido es obligatorio")
+    @Size(min = 2, max = 100, message = "El apellido debe tener entre 2 y 100 caracteres")
+    private String apellido;
+    
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El formato del email no es válido")
+    private String email;
+    
+    @NotBlank(message = "El teléfono es obligatorio")
+    @Pattern(regexp = "^\\+?[0-9\\-\\s]{10,20}$", message = "El formato del teléfono no es válido")
+    private String telefono;
+    
+    
+    @NotNull(message = "El tipo de documento es obligatorio")
+    private TipoDocumento tipoDocumento;  // ENUM
+    
+    @NotNull(message = "La nacionalidad es obligatoria")
+    private Nacionalidad nacionalidad;    // ENUM
 }
