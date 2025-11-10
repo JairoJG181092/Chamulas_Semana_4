@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reservas")
+@Table(name = "RESERVAS")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,7 +22,9 @@ public class Reservacion {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="ID_RESERVACION")
     private Long id;
+    
     
     @NotNull(message = "El huésped es obligatorio")
     @Column(name = "huesped_id", nullable = false)
