@@ -40,7 +40,7 @@ public class Habitacion {
     
     @NotNull(message = "El precio es obligatorio")
     @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0")
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false, columnDefinition = "NUMBER")
     private Double precio;
     
     @NotNull(message = "La capacidad es obligatoria")
@@ -54,6 +54,5 @@ public class Habitacion {
     @Column(nullable = false, length = 20)
     private EstadoHabitacion estado = EstadoHabitacion.DISPONIBLE;
     
-    @Column(name = "fecha_creacion")
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
 }
+    
