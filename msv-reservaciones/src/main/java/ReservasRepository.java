@@ -34,5 +34,6 @@ public interface ReservasRepository extends JpaRepository<Reservacion, Long> {
 	"AND r.estado =:estado")
 	
 	Long countByHabitacionIdAndEstado(@Param("habitacionId")Long habitacionId,
+
 			@Param("estado") EstadoReserva estado);
 }

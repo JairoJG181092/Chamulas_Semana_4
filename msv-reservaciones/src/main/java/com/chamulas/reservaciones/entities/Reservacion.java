@@ -25,6 +25,7 @@ public class Reservacion {
     @Column(name="ID_RESERVACION")
     private Long id;
     
+    
     @NotNull(message = "El huésped es obligatorio")
     @Column(name = "huesped_id", nullable = false)
     private Long huespedId;
