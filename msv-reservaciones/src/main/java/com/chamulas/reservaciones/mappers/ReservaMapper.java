@@ -1,6 +1,10 @@
 package com.chamulas.reservaciones.mappers;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
+import org.springframework.stereotype.Component;
 
 import com.chamulas.commons.dto.ReservaRequest;
 import com.chamulas.commons.dto.ReservaResponse;
@@ -8,6 +12,7 @@ import com.chamulas.commons.enums.EstadoReserva;
 import com.chamulas.commons.mappers.CommonMapper;
 import com.chamulas.reservaciones.entities.Reservacion;
 
+@Component
 public class ReservaMapper implements CommonMapper<ReservaRequest, ReservaResponse, Reservacion> {
 
 	@Override
@@ -36,17 +41,17 @@ public class ReservaMapper implements CommonMapper<ReservaRequest, ReservaRespon
 		reservacion.setFechaEntrada(request.fechaEntrada());
 		reservacion.setFechaSalida(request.fechaSalida());
 		
-		int noches=calcularNoches(request.fechaEntrada(), request.fechaSalida());
+		long noches=calcularNoches(request.fechaEntrada(), request.fechaSalida());
 		reservacion.setNoches(noches);
 		reservacion.setTotal(0.0);
 		reservacion.setEstado(EstadoReserva.CONFIRMADA);
 		
 		return reservacion;
 	}
-	private int calcularNoches(LocalDate fechaEntrada, LocalDate fechaSalida) {
-		if(fechaEntrada==null || fechaSalida==null) {
-			return 0;
-		}
-		return (int)(fechaSalida.toEpochDay()-fechaEntrada.toEpochDay());
+	private int calcularNoches(LocalDateTime fechaEntrada, LocalDateTime fechaSalida) {
+	    if (fechaEntrada == null || fechaSalida == null) {
+	        return 0;
+	    }
+	    return (int) ChronoUnit.DAYS.between(fechaEntrada, fechaSalida);
 	}
 }
