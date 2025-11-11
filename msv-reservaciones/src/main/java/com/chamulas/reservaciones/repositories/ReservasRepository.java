@@ -1,14 +1,15 @@
+package com.chamulas.reservaciones.repositories;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-
+import org.springframework.data.repository.query.Param;
 import com.chamulas.commons.enums.EstadoReserva;
 import com.chamulas.reservaciones.entities.Reservacion;
 
-import feign.Param;
+
 
 public interface ReservasRepository extends JpaRepository<Reservacion, Long> {
 
@@ -19,8 +20,8 @@ public interface ReservasRepository extends JpaRepository<Reservacion, Long> {
 	List<Reservacion>findByHabitacionId(Long habitacionId);
 	
 	@Query("SELECT r FROM Reservacion r WHERE r.habitacionId = :habitacionId"+
-	"AND r.estado IN :estados"+"AND((r.fechaEntrada BETWEEN : fechaEntrada AND :fechaSalida)OR"+
-	"(r.fechaEntrada<= : fechaEntrada AND r.fechaSalida >= : fechaSalida))")
+	"AND r.estado IN :estados"+"AND((r.fechaEntrada BETWEEN :fechaEntrada AND :fechaSalida)OR"+
+	"(r.fechaEntrada<= : fechaEntrada AND r.fechaSalida >= :fechaSalida))")
 
 	List<Reservacion>findReservasConflictivas(
 			@Param("habitacionId")Long habitacionId,
@@ -37,3 +38,4 @@ public interface ReservasRepository extends JpaRepository<Reservacion, Long> {
 
 			@Param("estado") EstadoReserva estado);
 }
+

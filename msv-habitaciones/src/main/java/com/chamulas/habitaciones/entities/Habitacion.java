@@ -40,7 +40,7 @@ public class Habitacion {
     
     @NotNull(message = "El precio es obligatorio")
     @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0")
-    @Column(nullable = false, columnDefinition = "NUMBER")
+    @Column(nullable = false)
     private Double precio;
     
     @NotNull(message = "La capacidad es obligatoria")
