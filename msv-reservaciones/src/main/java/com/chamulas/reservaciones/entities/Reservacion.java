@@ -22,7 +22,7 @@ public class Reservacion {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="ID_RESERVACION")
+    @Column(name="ID")
     private Long id;
     
     
@@ -52,32 +52,12 @@ public class Reservacion {
     
     @NotNull(message = "El total es obligatorio")
     @DecimalMin(value = "0.01", message = "El total debe ser mayor a 0")
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false, columnDefinition = "NUMBER")
     private Double total;
     
     @NotNull(message = "El estado es obligatorio")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private EstadoReserva estado = EstadoReserva.CONFIRMADA;
-    
-    @Column(name = "fecha_creacion")
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
-    
-    @Column(name = "fecha_actualizacion")
-    private LocalDateTime fechaActualizacion = LocalDateTime.now();
 
-    // Método de validación personalizada
-    @AssertTrue(message = "La fecha de salida debe ser posterior a la fecha de entrada")
-    public boolean isFechasValidas() {
-        if (fechaEntrada == null || fechaSalida == null) {
-            return true; // La validación @NotNull ya maneja esto
-        }
-        return fechaSalida.isAfter(fechaEntrada);
-    }
-
-    // Setter personalizado para estado que actualiza fechaActualizacion
-    public void setEstado(EstadoReserva estado) {
-        this.estado = estado;
-        this.fechaActualizacion = LocalDateTime.now();
-    }
 }
