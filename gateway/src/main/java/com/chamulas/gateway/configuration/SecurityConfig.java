@@ -28,13 +28,13 @@ public class SecurityConfig {
 				corsConfigurationSource.setAllowCredentials(true);
 				return corsConfigurationSource;
 			}))	.authorizeExchange(exchange -> exchange
-					.pathMatchers(HttpMethod.OPTIONS,"/**").permitAll()
-					.pathMatchers(HttpMethod.GET,"/**").hasAnyRole("ADMIN","USER")
-					.pathMatchers(HttpMethod.POST,"/**").hasAnyRole("ADMIN","USER")
-					.pathMatchers(HttpMethod.PATCH,"/**").hasAnyRole("ADMIN","USER")
-					.pathMatchers(HttpMethod.PUT,"/**").hasRole("ADMIN")
-					.pathMatchers(HttpMethod.DELETE,"/**").hasRole("ADMIN")
-					.anyExchange().authenticated()
+//					.pathMatchers(HttpMethod.OPTIONS,"/**").permitAll()
+//					.pathMatchers(HttpMethod.GET,"/**").hasAnyRole("ADMIN","USER")
+//					.pathMatchers(HttpMethod.POST,"/**").hasAnyRole("ADMIN","USER")
+//					.pathMatchers(HttpMethod.PATCH,"/**").hasAnyRole("ADMIN","USER")
+//					.pathMatchers(HttpMethod.PUT,"/**").hasRole("ADMIN")
+//					.pathMatchers(HttpMethod.DELETE,"/**").hasRole("ADMIN")
+					.anyExchange().permitAll()
 					).oauth2ResourceServer(oauth2 -> oauth2
 							.jwt(jwt->
 							jwt.jwtAuthenticationConverter(reactiveJwtAuthenticationConverterAdapter())))
