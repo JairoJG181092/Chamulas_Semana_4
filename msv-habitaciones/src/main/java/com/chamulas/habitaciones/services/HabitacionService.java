@@ -1,4 +1,3 @@
-// HabitacionService.java
 package com.chamulas.habitaciones.services;
 
 import com.chamulas.commons.dto.HabitacionRequest;

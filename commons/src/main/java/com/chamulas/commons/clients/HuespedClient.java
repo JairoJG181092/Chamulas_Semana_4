@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.chamulas.commons.dto.HuespedResponse;
 
-@FeignClient(name="msv-huesped")
+@FeignClient(name="msv-huespedes")
 public interface HuespedClient {
 
 	@GetMapping("/{id}")

@@ -1,4 +1,3 @@
-// HabitacionController.java
 package com.chamulas.habitaciones.controllers;
 
 import com.chamulas.habitaciones.services.HabitacionService;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/habitaciones")
+//@RequestMapping("/api/habitaciones")
 @Slf4j
 public class HabitacionController extends CommonController<HabitacionRequest, HabitacionResponse, HabitacionService> {
 

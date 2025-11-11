@@ -1,4 +1,3 @@
-// HabitacionServiceImpl.java
 package com.chamulas.habitaciones.services;
 
 import com.chamulas.habitaciones.entities.Habitacion;
@@ -71,7 +70,6 @@ public class HabitacionServiceImpl implements HabitacionService {
             throw new IllegalArgumentException("Ya existe otra habitación con el número: " + request.getNumero());
         }
         
-        // Actualizar campos
         existingHabitacion.setNumero(request.getNumero());
         existingHabitacion.setTipo(request.getTipo());
         existingHabitacion.setDescripcion(request.getDescripcion());
