@@ -23,7 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/reservas")
+//@RequestMapping("/api/reservas")
 @AllArgsConstructor
 @Slf4j
 public class ReservaController {
@@ -35,6 +35,13 @@ public class ReservaController {
 		log.info("Obteniendo todas las reservas");
 		return ResponseEntity.ok(reservaService.listar());
 	}
+	
+	@PostMapping
+    public ResponseEntity<ReservaResponse> crearReserva(@RequestBody ReservaRequest request) {
+        log.info("Creando nueva reserva: {}", request);
+        ReservaResponse reserva = reservaService.registrar(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(reserva);
+    }
 	
 	@GetMapping("/{id}")
 	    public ResponseEntity<ReservaResponse> obtenerPorId(@PathVariable Long id){

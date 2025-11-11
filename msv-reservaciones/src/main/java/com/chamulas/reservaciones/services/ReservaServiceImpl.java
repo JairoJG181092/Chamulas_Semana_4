@@ -2,6 +2,7 @@ package com.chamulas.reservaciones.services;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -15,7 +16,6 @@ import com.chamulas.commons.dto.ReservaRequest;
 import com.chamulas.commons.dto.ReservaResponse;
 import com.chamulas.commons.enums.EstadoReserva;
 import com.chamulas.commons.exceptions.RelacionesException;
-import com.chamulas.reservaciones.MsvReservacionesApplication;
 import com.chamulas.reservaciones.entities.Reservacion;
 import com.chamulas.reservaciones.mappers.ReservaMapper;
 import com.chamulas.reservaciones.repositories.ReservasRepository;
@@ -28,15 +28,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ReservaServiceImpl implements ReservaService {
 
-    
     private final ReservasRepository reservasRepository;
     private final ReservaMapper reservaMapper;
     private final HabitacionClient habitacionClient;
 
-
     @Override
     @Transactional(readOnly=true)
     public List<ReservaResponse> listar() {
+        log.info("Listando todas las reservaciones");
         return reservasRepository.findAll().stream()
                 .map(reservaMapper::entityToResponse).toList();
     }
@@ -44,6 +43,7 @@ public class ReservaServiceImpl implements ReservaService {
     @Override
     @Transactional(readOnly=true)
     public ReservaResponse obtenerPorId(Long id) {
+        log.info("Obteniendo reservación con ID: {}", id);
         Reservacion reservacion =  reservasRepository.findById(id)
                 .orElseThrow(()-> new NoSuchElementException("Reservacion no encontrada con el ID: "+id));
         return reservaMapper.entityToResponse(reservacion);
@@ -53,23 +53,31 @@ public class ReservaServiceImpl implements ReservaService {
     @Transactional
     public ReservaResponse registrar(ReservaRequest request) {
         log.info("Reservando: {}", request);
+        
+        // Validación básica de fechas
         if(!request.fechaSalida().isAfter(request.fechaEntrada())) {
         	throw new IllegalArgumentException("La fecha de salida debe ser posterior a la fecha de entrada");
         }
         
+        // Validar disponibilidad
         validarDisponibilidad(request.habitacionId(), request.fechaEntrada(), request.fechaSalida());
         
-        HabitacionResponse habitacion=habitacionClient.obtenerHabitacionPorId(request.habitacionId());
-        double precioPorNoche=habitacion.getPrecio();
+        // Obtener información de la habitación para calcular precio
+        HabitacionResponse habitacion = habitacionClient.obtenerHabitacionPorId(request.habitacionId());
+        double precioPorNoche = habitacion.getPrecio();
         
+        // Crear entidad
         Reservacion reservacion = reservaMapper.requestToEntity(request);
         
-        int noches = reservacion.getNoches();
+        // Calcular noches y total
+        long noches = calcularNoches(request.fechaEntrada(), request.fechaSalida());
         double total = noches * precioPorNoche;
+        reservacion.setNoches((long) noches);
         reservacion.setTotal(total);
         
+        // Guardar reservación
         Reservacion reservaGuardada = reservasRepository.save(reservacion);
-        log.info("Reserva creada: {}", reservaGuardada);
+        log.info("Reserva creada exitosamente: {}", reservaGuardada);
         
         return reservaMapper.entityToResponse(reservaGuardada);
     }
@@ -79,14 +87,16 @@ public class ReservaServiceImpl implements ReservaService {
     public ReservaResponse actualizar(ReservaRequest request, Long id) {
         log.info("Actualizando reserva ID: {} con datos: {}", id, request);
         
+        // Buscar reservación existente
         Reservacion reservacionExiste = reservasRepository.findById(id).orElseThrow(()->
         new NoSuchElementException("Reserva no encontrada con el ID: "+id));
         
+        // Validar que permita modificación
         if(!permiteModificacion(reservacionExiste.getEstado())) {
             throw new IllegalArgumentException("No se puede modificar reserva en estado: "+ reservacionExiste.getEstado());
         }
         
-      
+        // Si cambió habitación o fechas, validar disponibilidad
         if (!reservacionExiste.getHabitacionId().equals(request.habitacionId()) ||
             !reservacionExiste.getFechaEntrada().equals(request.fechaEntrada()) ||
             !reservacionExiste.getFechaSalida().equals(request.fechaSalida())) {
@@ -94,22 +104,22 @@ public class ReservaServiceImpl implements ReservaService {
             validarDisponibilidadParaModificar(request.habitacionId(), request.fechaEntrada(), request.fechaSalida(), id);
         }
         
-       
+        // Actualizar campos
         reservacionExiste.setHuespedId(request.huespedId());
         reservacionExiste.setHabitacionId(request.habitacionId());
         reservacionExiste.setFechaEntrada(request.fechaEntrada());
         reservacionExiste.setFechaSalida(request.fechaSalida());
         
-        int noches = calcularNoches(request.fechaEntrada(), request.fechaSalida());
-        reservacionExiste.setNoches(noches);
+        // Recalcular noches y total
+        long noches = calcularNoches(request.fechaEntrada(), request.fechaSalida());
+        reservacionExiste.setNoches((long) noches);
         
         HabitacionResponse habitacion = habitacionClient.obtenerHabitacionPorId(request.habitacionId());
         double precioPorNoche = habitacion.getPrecio();
         double total = noches * precioPorNoche;
         reservacionExiste.setTotal(total);
         
-        reservacionExiste.setFechaActualizacion(java.time.LocalDateTime.now());
-        
+        // Guardar cambios
         Reservacion reservaActualizada = reservasRepository.save(reservacionExiste);
         log.info("Reserva actualizada exitosamente: {}", reservaActualizada);
         
@@ -135,18 +145,18 @@ public class ReservaServiceImpl implements ReservaService {
     @Override
     @Transactional
     public ReservaResponse realizarAcceso(Long id) {
+        log.info("Realizando check-in para reserva ID: {}", id);
         Reservacion reservacion = reservasRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Reserva no encontrada con ID: " + id));
         
         if (!permiteAcceso(reservacion.getEstado())) {
-            throw new IllegalArgumentException("No se puede hacer acceso de reservas en estado: " + reservacion.getEstado());
+            throw new IllegalArgumentException("No se puede hacer check-in de reservas en estado: " + reservacion.getEstado());
         }
         
         reservacion.setEstado(EstadoReserva.EN_CURSO);
-        reservacion.setFechaActualizacion(LocalDateTime.now());
         
         Reservacion reservaActualizada = reservasRepository.save(reservacion);
-        log.info("Acceso realizado para reserva ID: {}", id);
+        log.info("Check-in realizado para reserva ID: {}", id);
         
         return reservaMapper.entityToResponse(reservaActualizada);
     }
@@ -154,18 +164,18 @@ public class ReservaServiceImpl implements ReservaService {
     @Override
     @Transactional
     public ReservaResponse realizarSalida(Long id) {
+        log.info("Realizando check-out para reserva ID: {}", id);
         Reservacion reservacion = reservasRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Reserva no encontrada con ID: " + id));
         
         if (!permiteSalida(reservacion.getEstado())) {
-            throw new IllegalArgumentException("No se puede hacer salida de reservas en estado: " + reservacion.getEstado());
+            throw new IllegalArgumentException("No se puede hacer check-out de reservas en estado: " + reservacion.getEstado());
         }
         
         reservacion.setEstado(EstadoReserva.FINALIZADA);
-        reservacion.setFechaActualizacion(LocalDateTime.now());
         
         Reservacion reservaActualizada = reservasRepository.save(reservacion);
-        log.info("Salida realizada para reserva ID: {}", id);
+        log.info("Check-out realizado para reserva ID: {}", id);
         
         return reservaMapper.entityToResponse(reservaActualizada);
     }
@@ -173,6 +183,7 @@ public class ReservaServiceImpl implements ReservaService {
     @Override
     @Transactional
     public ReservaResponse cancelarReserva(Long id) {
+        log.info("Cancelando reserva ID: {}", id);
         Reservacion reservacion = reservasRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Reserva no encontrada con ID: " + id));
         
@@ -181,7 +192,6 @@ public class ReservaServiceImpl implements ReservaService {
         }
         
         reservacion.setEstado(EstadoReserva.CANCELADA);
-        reservacion.setFechaActualizacion(LocalDateTime.now());
         
         Reservacion reservaActualizada = reservasRepository.save(reservacion);
         log.info("Reserva cancelada ID: {}", id);
@@ -189,56 +199,47 @@ public class ReservaServiceImpl implements ReservaService {
         return reservaMapper.entityToResponse(reservaActualizada);
     }
     
+    // ========== MÉTODOS PRIVADOS DE VALIDACIÓN ==========
+    
     private boolean permiteModificacion(EstadoReserva estado) {
-        return switch (estado) {
-            case CONFIRMADA, PENDIENTE -> true;
-            case EN_CURSO, FINALIZADA, CANCELADA -> false;
-        };
+        return estado == EstadoReserva.CONFIRMADA;
     }
     
     private boolean permiteCancelacion(EstadoReserva estado) {
-        return switch (estado) {
-            case CONFIRMADA, PENDIENTE -> true;
-            case EN_CURSO, FINALIZADA, CANCELADA -> false;
-        };
+        return estado == EstadoReserva.CONFIRMADA;
     }
 
     private boolean permiteAcceso(EstadoReserva estado) {
-        return switch (estado) {
-            case CONFIRMADA -> true;
-            case PENDIENTE, EN_CURSO, FINALIZADA, CANCELADA -> false;
-        };
+        return estado == EstadoReserva.CONFIRMADA;
     }
     
-  
     private boolean permiteSalida(EstadoReserva estado) {
-        return switch (estado) {
-            case EN_CURSO -> true;
-            case CONFIRMADA, PENDIENTE, FINALIZADA, CANCELADA -> false;
-        };
+        return estado == EstadoReserva.EN_CURSO;
     }
     
-    private void validarDisponibilidad(Long habitacionId, LocalDate fechaEntrada, LocalDate fechaSalida) {
+    private void validarDisponibilidad(Long habitacionId, LocalDateTime fechaEntrada, LocalDateTime fechaSalida) {
         List<EstadoReserva> estadoOcupado = Arrays.asList(
                 EstadoReserva.CONFIRMADA,
-                EstadoReserva.EN_CURSO,
-                EstadoReserva.PENDIENTE
-                );
-        List<Reservacion> reservasConflictivas = reservasRepository.findReservasConflictivas(habitacionId, fechaEntrada, fechaSalida, estadoOcupado);
+                EstadoReserva.EN_CURSO
+        );
+        List<Reservacion> reservasConflictivas = reservasRepository.findReservasConflictivas(
+            habitacionId, fechaEntrada, fechaSalida, estadoOcupado);
+        
         if(!reservasConflictivas.isEmpty()) {
             throw new RelacionesException("La habitacion no esta disponible para las fechas seleccionadas ");
         }
     }
     
-    private void validarDisponibilidadParaModificar(Long habitacionId, LocalDate fechaEntrada, 
-                                                   LocalDate fechaSalida, Long reservaId) {
+    private void validarDisponibilidadParaModificar(Long habitacionId, LocalDateTime fechaEntrada, 
+    		LocalDateTime fechaSalida, Long reservaId) {
         List<EstadoReserva> estadoOcupado = Arrays.asList(
                 EstadoReserva.CONFIRMADA,
-                EstadoReserva.EN_CURSO,
-                EstadoReserva.PENDIENTE
-                );
-        List<Reservacion> reservasConflictivas = reservasRepository.findReservasConflictivas(habitacionId, fechaEntrada, fechaSalida, estadoOcupado);
+                EstadoReserva.EN_CURSO
+        );
+        List<Reservacion> reservasConflictivas = reservasRepository.findReservasConflictivas(
+            habitacionId, fechaEntrada, fechaSalida, estadoOcupado);
         
+        // Filtrar la reservación actual
         reservasConflictivas = reservasConflictivas.stream()
                 .filter(r -> !r.getId().equals(reservaId))
                 .toList();
@@ -248,10 +249,10 @@ public class ReservaServiceImpl implements ReservaService {
         }
     }
     
-    private int calcularNoches(LocalDate fechaEntrada, LocalDate fechaSalida) {
+    private long calcularNoches(LocalDateTime fechaEntrada, LocalDateTime fechaSalida) {
         if (fechaEntrada == null || fechaSalida == null) {
             return 0;
         }
-        return (int) (fechaSalida.toEpochDay() - fechaEntrada.toEpochDay());
+        return ChronoUnit.DAYS.between(fechaEntrada, fechaSalida);
     }
 }

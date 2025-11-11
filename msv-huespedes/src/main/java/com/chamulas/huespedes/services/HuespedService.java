@@ -3,15 +3,10 @@ package com.chamulas.huespedes.services;
 
 import com.chamulas.commons.dto.HuespedRequest;
 import com.chamulas.commons.dto.HuespedResponse;
-import java.util.List;
+import com.chamulas.commons.services.CommonService;
 
-public interface HuespedService {
+public interface HuespedService extends CommonService<HuespedRequest, HuespedResponse> {
     
-    List<HuespedResponse> findAll();
-    HuespedResponse findById(Long id);
     HuespedResponse findByEmail(String email);
     HuespedResponse findByTelefono(String telefono);
-    HuespedResponse save(HuespedRequest request);
-    HuespedResponse update(Long id, HuespedRequest request);
-    void deleteById(Long id);
 }

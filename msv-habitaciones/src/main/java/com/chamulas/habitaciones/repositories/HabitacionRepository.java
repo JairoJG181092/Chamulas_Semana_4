@@ -20,3 +20,4 @@ public interface HabitacionRepository extends JpaRepository<Habitacion, Long> {
     List<Habitacion> findByEstado(EstadoHabitacion estado);
     
 }
+//actualizado 10-11-25
