@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "habitaciones")
@@ -27,6 +26,7 @@ public class Habitacion {
     @NotNull(message = "El número de habitación es obligatorio")
     @Positive(message = "El número de habitación debe ser mayor a 0")
     @Column(nullable = false, unique = true)
+   
     private Long numero;
     
     @NotNull(message = "El tipo de habitación es obligatorio")
@@ -55,4 +55,5 @@ public class Habitacion {
     private EstadoHabitacion estado = EstadoHabitacion.DISPONIBLE;
     
 }
+//actualizado 10-11-25
     

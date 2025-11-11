@@ -1,4 +1,3 @@
-// HabitacionController.java
 package com.chamulas.habitaciones.controllers;
 
 import com.chamulas.habitaciones.services.HabitacionService;
