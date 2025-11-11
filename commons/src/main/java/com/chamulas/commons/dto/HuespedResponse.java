@@ -9,7 +9,7 @@ public record HuespedResponse(
 		String apellido,
 		String email,
 		String telefono,
-		TipoDocumento documento,
+		TipoDocumento tipodocumento,
 		Nacionalidad nacionalidad
 		) {
 
