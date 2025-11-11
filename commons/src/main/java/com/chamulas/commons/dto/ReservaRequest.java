@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record ReservaRequest(
 		
@@ -24,13 +25,13 @@ public record ReservaRequest(
 		@DateTimeFormat(pattern = "dd/MM/yyyy")
 		//@DateNow(message="La fecha de entrada no puede ser anterior al dia de hoy")
 		@FutureOrPresent(message="La fecha de entrada no puede ser anterior al dia de hoy")
-		LocalDate fechaEntrada,
+		LocalDateTime fechaEntrada,
 		
 		@NotNull(message = "La fecha de salida es requerida")		
 		@DateTimeFormat(pattern = "dd/MM/yyyy")
 //  	@DateNow(message="La fecha de entrada no puede ser anterior al dia de hoy")
 		@FutureOrPresent(message="La fecha de salida debe ser hoy o en el futuro")
-		LocalDate fechaSalida
+		LocalDateTime fechaSalida
 		
 	
 		) {

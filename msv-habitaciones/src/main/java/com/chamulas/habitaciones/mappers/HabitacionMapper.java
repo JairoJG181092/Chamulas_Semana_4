@@ -54,7 +54,7 @@ public class HabitacionMapper {
         habitacion.setDescripcion(request.getDescripcion());
         habitacion.setPrecio(request.getPrecio());
         habitacion.setCapacidad(request.getCapacidad());
-        
+        habitacion.setEstado(request.getEstado());
         
         return habitacion;
     }

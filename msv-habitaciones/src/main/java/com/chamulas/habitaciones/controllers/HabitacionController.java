@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/habitaciones")
+//@RequestMapping("/api/habitaciones")
 @Slf4j
 public class HabitacionController extends CommonController<HabitacionRequest, HabitacionResponse, HabitacionService> {
 

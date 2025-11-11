@@ -7,8 +7,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 import com.chamulas.commons.dto.HabitacionResponse;
 import com.chamulas.commons.dto.HuespedResponse;
+import com.chamulas.commons.enums.EstadoHabitacion;
 
-@FeignClient(name="msv-habitacion")
+@FeignClient(name="msv-habitaciones")
 public interface HabitacionClient {
 
 	@GetMapping("/{id}")
@@ -17,6 +18,6 @@ public interface HabitacionClient {
 	@PutMapping("/{idHabitacion}/estado/{idEstado}")
 	HabitacionResponse actualizarEstadoHabitacion(
 			@PathVariable Long idHabitacion,
-			@PathVariable Long idEstado
+			@PathVariable EstadoHabitacion estado
 			);
 }

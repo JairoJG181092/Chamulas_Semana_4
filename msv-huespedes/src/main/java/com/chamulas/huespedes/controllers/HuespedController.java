@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/huespedes")
+//@RequestMapping("/api/huespedes")
 @Slf4j
 public class HuespedController extends CommonController<HuespedRequest, HuespedResponse, HuespedService> {
 
