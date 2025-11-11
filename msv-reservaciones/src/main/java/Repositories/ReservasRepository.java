@@ -1,3 +1,5 @@
+package repositories;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -37,3 +39,4 @@ public interface ReservasRepository extends JpaRepository<Reservacion, Long> {
 
 			@Param("estado") EstadoReserva estado);
 }
+
