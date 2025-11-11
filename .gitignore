@@ -217,8 +217,8 @@ application-dev.properties
 .metadata/.plugins/org.eclipse.swt/EBWebView/Default/LOCK
 .metadata/.plugins/org.eclipse.core.resources/.projects/.org.eclipse.egit.core.cmp/.markers.snap
 *.snap
-/.metadata
-/.metadata
+.metadata
+.metadata
 .metadata/.plugins/org.eclipse.core.resources/.projects/.org.eclipse.egit.core.cmp/.markers.snap
 .metadata/.plugins/org.eclipse.core.resources/.projects/msv-huespedes/.indexes/history.index
 .metadata/.plugins/org.eclipse.jdt.core/1446723968.index
