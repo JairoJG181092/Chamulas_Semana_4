@@ -7,13 +7,11 @@ import com.chamulas.commons.controllers.CommonController;
 import com.chamulas.commons.enums.EstadoHabitacion;
 import com.chamulas.commons.enums.TipoHabitacion;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-//@RequestMapping("/api/habitaciones")
 @Slf4j
 public class HabitacionController extends CommonController<HabitacionRequest, HabitacionResponse, HabitacionService> {
 

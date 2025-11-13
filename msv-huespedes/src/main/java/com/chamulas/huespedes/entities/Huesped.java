@@ -1,5 +1,6 @@
 package com.chamulas.huespedes.entities;
 
+import com.chamulas.commons.enums.EstadoRegistro;
 import com.chamulas.commons.enums.Nacionalidad;
 import com.chamulas.commons.enums.TipoDocumento;
 import jakarta.persistence.*;
@@ -9,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "huespedes")
@@ -46,12 +46,18 @@ public class Huesped {
     
     @NotNull(message = "El tipo de documento es obligatorio")
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipoDocumento", nullable = false, length = 30)
+    @Column(name = "TIPODOCUMENTO", nullable = false, length = 30)
     private TipoDocumento tipoDocumento;
     
     @NotNull(message = "La nacionalidad es obligatoria")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private Nacionalidad nacionalidad;
+    
+    
+    @Enumerated(EnumType.STRING)
+   	@Column(name = "ESTADO_REGISTRO")
+   	private EstadoRegistro estadoRegistro;
+       
 
 }

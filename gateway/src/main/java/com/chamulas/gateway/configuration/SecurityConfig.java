@@ -20,26 +20,30 @@ import com.nimbusds.jwt.JWT;
 public class SecurityConfig {
 	@Bean
 	SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-		http.csrf(csrf -> csrf.disable()
-			.cors(cors -> cors.configurationSource(request ->{
-				CorsConfiguration corsConfigurationSource = new CorsConfiguration();
-				corsConfigurationSource.setAllowedOrigins(List.of("http://localhost:4200"));
-				corsConfigurationSource.setAllowedHeaders(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
-				corsConfigurationSource.setAllowCredentials(true);
-				return corsConfigurationSource;
-			}))	.authorizeExchange(exchange -> exchange
-//					.pathMatchers(HttpMethod.OPTIONS,"/**").permitAll()
-//					.pathMatchers(HttpMethod.GET,"/**").hasAnyRole("ADMIN","USER")
-//					.pathMatchers(HttpMethod.POST,"/**").hasAnyRole("ADMIN","USER")
-//					.pathMatchers(HttpMethod.PATCH,"/**").hasAnyRole("ADMIN","USER")
-//					.pathMatchers(HttpMethod.PUT,"/**").hasRole("ADMIN")
-//					.pathMatchers(HttpMethod.DELETE,"/**").hasRole("ADMIN")
-					.anyExchange().permitAll()
-					).oauth2ResourceServer(oauth2 -> oauth2
-							.jwt(jwt->
-							jwt.jwtAuthenticationConverter(reactiveJwtAuthenticationConverterAdapter())))
-				);
-		return http.build();
+		http.csrf(csrf -> csrf.disable())
+		// .cors(Customizer.withDefaults())
+		.cors(cors -> cors.configurationSource(request -> {
+			CorsConfiguration config = new CorsConfiguration();
+			config.setAllowedOrigins(List.of("http://localhost:4200"));
+			config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+			config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+			config.setAllowCredentials(true);
+			return config;
+		})).authorizeExchange(exchange -> exchange
+			// Permitir todas las peticiones OPTIONS (preflight CORS)
+			.pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+			// Restricciones por método
+			.pathMatchers(HttpMethod.GET, "/**").hasAnyRole("ADMIN", "USER")
+			.pathMatchers(HttpMethod.POST, "/**").hasAnyRole("ADMIN", "USER")
+			.pathMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
+			.pathMatchers(HttpMethod.DELETE, "/**").hasRole("ADMIN")
+			.anyExchange().authenticated())
+			.oauth2ResourceServer(oauth2 -> oauth2
+					.jwt(jwt -> jwt.jwtAuthenticationConverter(reactiveJwtAuthenticationConverterAdapter()
+			)));
+
+return http.build();
 	}
 	
 	ReactiveJwtAuthenticationConverterAdapter reactiveJwtAuthenticationConverterAdapter() {
