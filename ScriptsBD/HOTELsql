@@ -1,33 +1,42 @@
--- Tabla HUESPEDES
-CREATE TABLE huespedes (
-    id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    nombre VARCHAR2(100),
-    apellido VARCHAR2(100),
-    email VARCHAR2(150),
-    telefono VARCHAR2(20),
-    tipoDocumento VARCHAR2(50),
-    nacionalidad VARCHAR2(100)
-);
+drop table huespedes;
+drop table habitaciones;
+drop table reservas;
 
--- Tabla HABITACIONES
+Se actualizaron los Scripts de las tablas quitando la fecha de creación:
+HABITACIONES
 CREATE TABLE habitaciones (
-    id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    numero NUMBER,
-    tipo VARCHAR2(50),
-    descripcion VARCHAR2(500),
-    precio NUMBER(10,2),
-    capacidad NUMBER,
-    estado VARCHAR2(20)
+  id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  numero NUMBER,
+  tipo VARCHAR2(50),
+  descripcion VARCHAR2(500),
+  precio NUMBER(10,2),
+  capacidad NUMBER,
+  estado VARCHAR2(20),
+  ESTADO_REGISTRO VARCHAR2(30) NOT NULL
 );
 
--- Tabla RESERVAS
-CREATE TABLE reservas (
-    id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    huesped_id NUMBER,
-    habitacion_id NUMBER,
-    fecha_entrada DATE,
-    fecha_salida DATE,
-    noches NUMBER,
-    total NUMBER(10,2),
-    estado VARCHAR2(20)
+HUESPEDES:
+CREATE TABLE huespedes (
+   id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   nombre VARCHAR2(100),
+   apellido VARCHAR2(100),
+   email VARCHAR2(150),
+   telefono VARCHAR2(20),
+   tipoDocumento VARCHAR2(50),
+   nacionalidad VARCHAR2(100),
+   ESTADO_REGISTRO VARCHAR2(30) NOT NULL
 );
+
+RESERVAS:
+CREATE TABLE reservas (
+  id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  huesped_id NUMBER,
+  habitacion_id NUMBER,
+  fecha_entrada DATE,
+  fecha_salida DATE,
+  noches NUMBER,
+  total NUMBER(10,2),
+  estado VARCHAR2(20),
+  ESTADO_REGISTRO VARCHAR2(30) NOT NULL
+);
+/
