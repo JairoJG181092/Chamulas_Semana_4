@@ -1,25 +1,22 @@
 package com.chamulas.reservaciones.services;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.chamulas.commons.clients.HabitacionClient;
 import com.chamulas.commons.dto.HabitacionResponse;
 import com.chamulas.commons.dto.ReservaRequest;
 import com.chamulas.commons.dto.ReservaResponse;
+import com.chamulas.commons.enums.EstadoRegistro;
 import com.chamulas.commons.enums.EstadoReserva;
-import com.chamulas.commons.exceptions.RelacionesException;
+import com.chamulas.commons.exceptions.EntidadRelacionadaException;
 import com.chamulas.reservaciones.entities.Reservacion;
 import com.chamulas.reservaciones.mappers.ReservaMapper;
 import com.chamulas.reservaciones.repositories.ReservasRepository;
-
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,7 +61,7 @@ public class ReservaServiceImpl implements ReservaService {
         
         // Obtener información de la habitación para calcular precio
         HabitacionResponse habitacion = habitacionClient.obtenerHabitacionPorId(request.habitacionId());
-        double precioPorNoche = habitacion.getPrecio();
+        double precioPorNoche = habitacion.precio();
         
         // Crear entidad
         Reservacion reservacion = reservaMapper.requestToEntity(request);
@@ -115,7 +112,7 @@ public class ReservaServiceImpl implements ReservaService {
         reservacionExiste.setNoches((long) noches);
         
         HabitacionResponse habitacion = habitacionClient.obtenerHabitacionPorId(request.habitacionId());
-        double precioPorNoche = habitacion.getPrecio();
+        double precioPorNoche = habitacion.precio();
         double total = noches * precioPorNoche;
         reservacionExiste.setTotal(total);
         
@@ -137,8 +134,7 @@ public class ReservaServiceImpl implements ReservaService {
         if (!permiteCancelacion(reservacion.getEstado())) {
             throw new IllegalArgumentException("No se pueden eliminar reservas en estado: " + reservacion.getEstado());
         }
-        
-        reservasRepository.deleteById(id);
+        reservacion.setEstadoRegistro(EstadoRegistro.ELIMINADO);
         log.info("Reserva eliminada exitosamente: {}", id);
     }
 
@@ -199,6 +195,14 @@ public class ReservaServiceImpl implements ReservaService {
         return reservaMapper.entityToResponse(reservaActualizada);
     }
     
+    
+    @Transactional(readOnly = true)
+	private Reservacion getReservacionOrThrow(Long id) {
+		log.info("Buscando Habitación con el id: ", id);
+		return reservasRepository.findByIdAndEstadoRegistro(id, EstadoRegistro.ACTIVO)
+				.orElseThrow(()-> new NoSuchElementException("Reservación no encontrada con el id: " + id));
+	}
+    
     // ========== MÉTODOS PRIVADOS DE VALIDACIÓN ==========
     
     private boolean permiteModificacion(EstadoReserva estado) {
@@ -226,7 +230,7 @@ public class ReservaServiceImpl implements ReservaService {
             habitacionId, fechaEntrada, fechaSalida, estadoOcupado);
         
         if(!reservasConflictivas.isEmpty()) {
-            throw new RelacionesException("La habitacion no esta disponible para las fechas seleccionadas ");
+            throw new EntidadRelacionadaException("La habitacion no esta disponible para las fechas seleccionadas ");
         }
     }
     
@@ -245,7 +249,7 @@ public class ReservaServiceImpl implements ReservaService {
                 .toList();
         
         if(!reservasConflictivas.isEmpty()) {
-            throw new RelacionesException("La habitacion no esta disponible para las nuevas fechas seleccionadas");
+            throw new EntidadRelacionadaException("La habitacion no esta disponible para las nuevas fechas seleccionadas");
         }
     }
     
@@ -255,4 +259,16 @@ public class ReservaServiceImpl implements ReservaService {
         }
         return ChronoUnit.DAYS.between(fechaEntrada, fechaSalida);
     }
+
+	@Override
+	public Boolean hasHabitacion(Long idHabitacion) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Boolean hasHuesped(Long idHuesped) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
