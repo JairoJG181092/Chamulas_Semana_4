@@ -4,6 +4,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -37,6 +38,8 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+
 import com.chamulas.oauth.controller.AuthController;
 import com.chamulas.oauth.entities.Rol;
 import com.chamulas.oauth.entities.Usuario;
@@ -89,8 +92,8 @@ public class SecurityConfig {
 		http
 			.authorizeHttpRequests((authorize) -> authorize
 					.requestMatchers("/api/login").permitAll()
-					.requestMatchers("/admin/**").hasRole("ADMIN")
-				.anyRequest().authenticated()
+					.requestMatchers("/admin/**").hasRole("admin")
+				.anyRequest().permitAll()
 			)
 			// Form login handles the redirect to the login page from the
 			// authorization server filter chain
@@ -195,18 +198,18 @@ public class SecurityConfig {
 	                    return rolRepo.save(r);
 	                });
 
-	        if (userRepo.findByUsername("ADMIN").isEmpty()) {
+	        if (userRepo.findByUsername("admin").isEmpty()) {
 	            Usuario admin = new Usuario();
-	            admin.setUsername("ADMIN");
-	            admin.setPassword(encoder.encode("ADMIN"));
+	            admin.setUsername("admin");
+	            admin.setPassword(encoder.encode("admin"));
 	            admin.setRoles(Set.of(adminRole));
 	            userRepo.save(admin);
 	        }
 	        
-	        if (userRepo.findByUsername("USER").isEmpty()) {
+	        if (userRepo.findByUsername("user").isEmpty()) {
 	        	Usuario user = new Usuario();
-	            user.setUsername("USER");
-	            user.setPassword(encoder.encode("USER"));
+	            user.setUsername("user");
+	            user.setPassword(encoder.encode("user"));
 	            user.setRoles(Set.of(userRole));
 	            userRepo.save(user);
 	        }
