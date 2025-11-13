@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
+import com.chamulas.commons.enums.EstadoRegistro;
+
 
 @Repository
 public interface HabitacionRepository extends JpaRepository<Habitacion, Long> {
@@ -17,7 +19,15 @@ public interface HabitacionRepository extends JpaRepository<Habitacion, Long> {
     
     List<Habitacion> findByTipo(TipoHabitacion tipo);
     
+    // Estado de la habitacion
     List<Habitacion> findByEstado(EstadoHabitacion estado);
     
+    // Estado del registro de una entidad
+    List<Habitacion> findByEstadoRegistro(EstadoRegistro estadoRegistro);
+    
+    
+    // Encontrar una habitacion por id y con estado activo
+	Optional<Habitacion> findByIdAndEstadoRegistro(Long id, EstadoRegistro estado);
+
+    
 }
-//actualizado 10-11-25
