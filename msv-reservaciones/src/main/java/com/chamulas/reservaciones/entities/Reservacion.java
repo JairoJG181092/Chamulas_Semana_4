@@ -1,5 +1,6 @@
 package com.chamulas.reservaciones.entities;
 
+import com.chamulas.commons.enums.EstadoRegistro;
 import com.chamulas.commons.enums.EstadoReserva;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -8,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -68,5 +68,9 @@ public class Reservacion {
         }
         return fechaSalida.isAfter(fechaEntrada);
     }
+    
+    @Enumerated(EnumType.STRING)
+   	@Column(name = "ESTADO_REGISTRO")
+   	private EstadoRegistro estadoRegistro;
 
 }
