@@ -1,4 +1,4 @@
-// HuespedRepository.java
+
 package com.chamulas.huespedes.repositories;
 
 import com.chamulas.commons.enums.EstadoRegistro;
