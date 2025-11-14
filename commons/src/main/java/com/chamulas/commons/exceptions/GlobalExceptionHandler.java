@@ -95,6 +95,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
     }
     
+    @ExceptionHandler(EntidadRelacionadaException.class)
+    public ResponseEntity<ErrorResponse> handleEntidadRelacionadaException(EntidadRelacionadaException e) {
+        log.warn("Error al eliminar un recurso: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage()));
+    }
+    
     
 
     @ExceptionHandler(Exception.class)

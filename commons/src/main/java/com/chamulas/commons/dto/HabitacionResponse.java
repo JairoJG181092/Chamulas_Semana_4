@@ -5,11 +5,11 @@ public record HabitacionResponse(
 		
 		Long id,
 	    Long numero,
-	    String tipo,
+	    Long idTipo,
 	    String descripcion,
 	    Double precio,
 	    Long capacidad,
-	    String estado
+	    Long idEstado
 		
 		) { 
 }

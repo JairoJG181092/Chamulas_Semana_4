@@ -15,8 +15,7 @@ public class ReservaMapper implements CommonMapper<ReservaRequest, ReservaRespon
 
 	@Override
 	public ReservaResponse entityToResponse(Reservacion entity) {
-		if(entity==null)
-		return null;
+		if(entity==null) return null;
 		return new ReservaResponse(
 				entity.getId(),
 				entity.getHuespedId(),
