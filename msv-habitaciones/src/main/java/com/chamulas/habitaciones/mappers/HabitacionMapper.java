@@ -19,11 +19,11 @@ public class HabitacionMapper implements CommonMapper<HabitacionRequest, Habitac
 		
 		return new HabitacionResponse(entity.getId(),
 				entity.getNumero(),
-				entity.getTipo().getDescripcion(),
+				entity.getTipo().getCodigo(),
 				entity.getDescripcion(),
 				entity.getPrecio(),
 				entity.getCapacidad(),
-				entity.getEstado().getDescripcion()
+				entity.getEstado().getCodigo()
 				);
 	}
 
@@ -33,7 +33,6 @@ public class HabitacionMapper implements CommonMapper<HabitacionRequest, Habitac
 		
 		Habitacion habitacion = new Habitacion();
 		habitacion.setNumero(request.numero());
-		habitacion.setDescripcion(request.descripcion());
 		habitacion.setPrecio(request.precio());
 		habitacion.setCapacidad(request.capacidad());
 		habitacion.setTipo(null);

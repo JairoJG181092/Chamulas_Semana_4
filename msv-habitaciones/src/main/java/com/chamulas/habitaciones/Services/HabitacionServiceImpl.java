@@ -4,11 +4,13 @@ package com.chamulas.habitaciones.services;
 import com.chamulas.habitaciones.entities.Habitacion;
 import com.chamulas.habitaciones.repositories.HabitacionRepository;
 import com.chamulas.habitaciones.mappers.HabitacionMapper;
+import com.chamulas.commons.clients.ReservacionesClient;
 import com.chamulas.commons.dto.HabitacionRequest;
 import com.chamulas.commons.dto.HabitacionResponse;
 import com.chamulas.commons.enums.EstadoHabitacion;
 import com.chamulas.commons.enums.EstadoRegistro;
 import com.chamulas.commons.enums.TipoHabitacion;
+import com.chamulas.commons.exceptions.EntidadRelacionadaException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,18 +23,46 @@ public class HabitacionServiceImpl implements HabitacionService {
 
 	private final HabitacionRepository habitacionRepository;
     private final HabitacionMapper habitacionMapper;
+    private final ReservacionesClient reservacionesClient;
 
-    public HabitacionServiceImpl(HabitacionRepository habitacionRepository, HabitacionMapper habitacionMapper) {
+    public HabitacionServiceImpl(HabitacionRepository habitacionRepository, HabitacionMapper habitacionMapper, ReservacionesClient reservacionesClient) {
         this.habitacionRepository = habitacionRepository;
         this.habitacionMapper = habitacionMapper;
+        this.reservacionesClient = reservacionesClient;
     }
 
+    // OBTENER LAS HABITACIONES CON ESTADO REGISTRO ACTIVO
     @Override
     @Transactional(readOnly = true)
     public List<HabitacionResponse> listar() {
         log.info("Listando todas las habitaciones");
         return habitacionRepository.findByEstadoRegistro(EstadoRegistro.ACTIVO).stream().map(habitacionMapper::entityToResponse).toList();
     }
+    
+    // OBTENER TODAS LAS HABITACIONES activas o inactivas
+    @Transactional(readOnly = true)
+    public List<HabitacionResponse> listAll() {
+        log.info("Listando todas las habitaciones");
+        return habitacionRepository.findAll().stream().map(habitacionMapper::entityToResponse).toList();
+    }
+    
+    // OBTENER LISTADO DE HABITACIONES DISPONIBLES
+    @Override
+    @Transactional(readOnly = true)
+	public List<HabitacionResponse> findDisponibles() {
+    	return habitacionRepository.findByEstado(EstadoHabitacion.DISPONIBLE).stream()
+				.map(habitacionMapper::entityToResponse).toList();
+	}
+    
+    
+    @Override
+    @Transactional(readOnly = true)
+	public List<HabitacionResponse> findByEstado(EstadoHabitacion estado) {
+		return habitacionRepository.findByEstado(EstadoHabitacion.DISPONIBLE).stream()
+				.map(habitacionMapper::entityToResponse).toList();
+	}
+    
+    
 
     @Override
     @Transactional(readOnly = true)
@@ -56,6 +86,7 @@ public class HabitacionServiceImpl implements HabitacionService {
 
         Habitacion habitacion = habitacionMapper.requestToEntity(request, tipoHabitacion, estadoHabitacion);
         habitacion.setEstadoRegistro(EstadoRegistro.ACTIVO);
+        habitacion.setDescripcion(tipoHabitacion.getDetalles());
         Habitacion savedHabitacion = habitacionRepository.save(habitacion);
         log.info("Habitación registrada exitosamente con ID: {}", savedHabitacion.getId());
         
@@ -69,10 +100,8 @@ public class HabitacionServiceImpl implements HabitacionService {
     	log.info("Actualizando habitación con ID: {}", id);
         Habitacion existingHabitacion = getHabitacionOrThrow(id);
         
-        
-        if (habitacionRepository.existsByNumero(request.numero()) && 
-            !existingHabitacion.getNumero().equals(request.numero())) {
-            throw new IllegalArgumentException("Ya existe otra habitación con el número: " + request.numero());
+        if(!existingHabitacion.getNumero().equals(request.numero()) && habitacionRepository.existsByNumero(request.numero())) {
+            throw new IllegalArgumentException("Ya existe otra habitación con el númeroo: " + request.numero());
         }
         
         // Verificando si el tipo de habitacion cambio
@@ -84,6 +113,8 @@ public class HabitacionServiceImpl implements HabitacionService {
 		if(tipoHabitacionCambio) {
 			TipoHabitacion tipoHabitacion = TipoHabitacion.fromCodigo(request.idTipo());
 	        existingHabitacion.setTipo(tipoHabitacion);
+	        existingHabitacion.setDescripcion(tipoHabitacion.getDetalles());
+
 		}
 		
 		if(estadoHabitacionCambio) {
@@ -92,7 +123,6 @@ public class HabitacionServiceImpl implements HabitacionService {
 		}
 	      
         existingHabitacion.setNumero(request.numero());
-        existingHabitacion.setDescripcion(request.descripcion());
         existingHabitacion.setPrecio(request.precio());
         existingHabitacion.setCapacidad(request.capacidad());
         
@@ -111,6 +141,15 @@ public class HabitacionServiceImpl implements HabitacionService {
         
         if (!habitacionRepository.existsById(id)) {
             throw new NoSuchElementException("Habitación no encontrada con ID: " + id);
+        }
+        
+        if(habitacion.getEstado().getCodigo().equals(2L)) {
+        	throw new IllegalArgumentException("Error, no se pueude eliminar la habitacion: " + habitacion.getNumero() +" porque esta Ocupada");
+        }
+        
+        if(reservacionesClient.hasHabitacion(id)) {
+        	throw new EntidadRelacionadaException("No se puede eliminar la habitación: " + habitacion.getNumero() + 
+					" Ya que tiene reservaciones en estado CONFIRMADA o EN_CURSO");
         }
         
         habitacion.setEstadoRegistro(EstadoRegistro.ELIMINADO);
@@ -140,16 +179,52 @@ public class HabitacionServiceImpl implements HabitacionService {
 	}
 
 	@Override
-	public List<HabitacionResponse> findByEstado(EstadoHabitacion estado) {
-		// TODO Auto-generated method stub
-		return null;
+	@Transactional
+	public HabitacionResponse actualizarEstadoHabitacion(Long idHabitacion) {
+		Habitacion habitacion = getHabitacionOrThrow(idHabitacion);
+		log.info("Actualizando estado de habitación: {}", habitacion.getNumero());
+		habitacion.setEstado(EstadoHabitacion.OCUPADA);
+		
+		habitacion = habitacionRepository.save(habitacion);
+		
+		log.info("Estado  de la habitacion {} actualizada a: {} exitósamente",
+				habitacion.getNumero(), EstadoHabitacion.OCUPADA.getDescripcion());
+
+		return habitacionMapper.entityToResponse(habitacion);
 	}
 
 	@Override
-	public List<HabitacionResponse> findDisponibles() {
-		// TODO Auto-generated method stub
-		return null;
+	@Transactional
+	public HabitacionResponse actualizarEstadoLimpieza(Long idHabitacion) {
+		Habitacion habitacion = getHabitacionOrThrow(idHabitacion);
+		log.info("Actualizando estado de habitación: {}", habitacion.getNumero());
+		habitacion.setEstado(EstadoHabitacion.LIMPIEZA);
+		
+		habitacion = habitacionRepository.save(habitacion);
+		
+		log.info("Estado  de la habitacion {} actualizada a: {} exitósamente",
+				habitacion.getNumero(), EstadoHabitacion.LIMPIEZA.getDescripcion());
+
+
+		return habitacionMapper.entityToResponse(habitacion);
 	}
 
+	@Override
+	public HabitacionResponse actualizarEstadoDisponible(Long idHabitacion) {
+		Habitacion habitacion = getHabitacionOrThrow(idHabitacion);
+		log.info("Actualizando estado de habitación: {}", habitacion.getNumero());
+		habitacion.setEstado(EstadoHabitacion.DISPONIBLE);
+		
+		habitacion = habitacionRepository.save(habitacion);
+		
+		log.info("Estado  de la habitacion {} actualizada a: {} exitósamente",
+				habitacion.getNumero(), EstadoHabitacion.DISPONIBLE.getDescripcion());
+
+		return habitacionMapper.entityToResponse(habitacion);
+	}
+
+	
+
+	
 
 }

@@ -24,7 +24,7 @@ public record HuespedRequest(
 	    
 	    @NotNull(message = "El tipo de documento es obligatorio")
         @Positive(message = "El id del tipo de documento debe ser positivo")
-	    Long IdTipoDocumento,  // ENUM
+	    Long idTipoDocumento,  // ENUM
 	    
 	    @NotNull(message = "La nacionalidad es obligatoria")
         @Positive(message = "El id de la nacionalidad debe ser positivo")

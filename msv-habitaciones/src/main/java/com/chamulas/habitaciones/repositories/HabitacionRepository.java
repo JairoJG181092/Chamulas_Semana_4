@@ -19,10 +19,10 @@ public interface HabitacionRepository extends JpaRepository<Habitacion, Long> {
     
     List<Habitacion> findByTipo(TipoHabitacion tipo);
     
-    // Estado de la habitacion
+    // LISTADO DE LAS HABITACIONES DE ACUERDO A SU ESTADO
     List<Habitacion> findByEstado(EstadoHabitacion estado);
     
-    // Estado del registro de una entidad
+    // OBTENER EL LISTADO DE HABITACIONES CON ESTADO ACTIVO
     List<Habitacion> findByEstadoRegistro(EstadoRegistro estadoRegistro);
     
     

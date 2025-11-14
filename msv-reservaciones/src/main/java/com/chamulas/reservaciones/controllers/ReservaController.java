@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.chamulas.commons.controllers.CommonController;
 import com.chamulas.commons.dto.ReservaRequest;
@@ -20,17 +21,26 @@ public class ReservaController extends CommonController<ReservaRequest, ReservaR
 		// TODO Auto-generated constructor stub
 	}	
 
-	@PostMapping("/{id}/checkin")
+	
+	// CAMBIAR EL ESTADO DE LA RESERVACION A EN_CURSO, MEDIANTE EN CURSO
+	@PutMapping("/{id}/checkin")
 	public ResponseEntity<ReservaResponse>realizarCheckin(@PathVariable Long id){
 		log.info("Realizando check in para ID:{}", id);
 		return ResponseEntity.ok(service.realizarAcceso(id));
 	}
-	@PostMapping("/{id}/checkout")
+	
+	
+	// CAMBIAR EL ESTADO DE LA RESERVACION A LIMPIEZA
+	@PutMapping("/{id}/checkout")
 	public ResponseEntity<ReservaResponse>realizarCheckout(@PathVariable Long id){
 		log.info("Realizando check out para ID:{}", id);
 		return ResponseEntity.ok(service.realizarSalida(id));
 	}
-	@PostMapping("/{id}/cancelar")
+	
+	
+	
+	
+	@PutMapping("/{id}/cancelar")
 	public ResponseEntity<ReservaResponse>cancelarReserva(@PathVariable Long id){
 		log.info("Cancelar reserva para ID:{}", id);
 		return ResponseEntity.ok(service.cancelarReserva(id));
@@ -41,6 +51,7 @@ public class ReservaController extends CommonController<ReservaRequest, ReservaR
 	public Boolean hasHabitacion(@PathVariable Long id){
 		return service.hasHabitacion(id);
 	}
+	
 	
 	@GetMapping("/existe/huesped/{id}")
 	public Boolean hasHuesped(@PathVariable Long id){
