@@ -27,11 +27,24 @@ public class HuespedServiceImpl implements HuespedService {
         this.huespedMapper = huespedMapper;
     }
 
+    
+    // LISTAR SOLO LOS HUESPEDES ACTIVOS
     @Override
     @Transactional(readOnly = true)
     public List<HuespedResponse> listar() {
         log.info("Listando todos los huéspedes");
         return huespedRepository.findByEstadoRegistro(EstadoRegistro.ACTIVO)
+        		.stream()
+        		.map(huespedMapper::entityToResponse)
+        		.toList();
+    }
+    
+    
+    // LISTAR TODOS LOS HUESPEDES ACTIVOS
+    @Transactional(readOnly = true)
+    public List<HuespedResponse> listAll() {
+        log.info("Listando todos los huéspedes");
+        return huespedRepository.findAll()
         		.stream()
         		.map(huespedMapper::entityToResponse)
         		.toList();
@@ -59,7 +72,7 @@ public class HuespedServiceImpl implements HuespedService {
             throw new IllegalArgumentException("Ya existe un huésped con el teléfono: " + request.telefono());
         }
         
-        TipoDocumento tipoDocumento = TipoDocumento.fromCodigo(request.IdTipoDocumento());
+        TipoDocumento tipoDocumento = TipoDocumento.fromCodigo(request.idTipoDocumento());
         Nacionalidad nacionalidad = Nacionalidad.fromCodigo(request.idNacionalidad());
          
         Huesped huesped = huespedMapper.requestToEntity(request, tipoDocumento, nacionalidad);
@@ -87,11 +100,11 @@ public class HuespedServiceImpl implements HuespedService {
             throw new IllegalArgumentException("Ya existe otro huésped con el teléfono: " + request.telefono());
         }
         
-        boolean existingDocumento = !existingHuesped.getTipoDocumento().getCodigo().equals(request.IdTipoDocumento());
+        boolean existingDocumento = !existingHuesped.getTipoDocumento().getCodigo().equals(request.idTipoDocumento());
         boolean existingNacionalidad = !existingHuesped.getNacionalidad().getCodigo().equals(request.idNacionalidad());
         
         if(existingDocumento) {
-        	TipoDocumento tipoDocumento = TipoDocumento.fromCodigo(request.IdTipoDocumento());
+        	TipoDocumento tipoDocumento = TipoDocumento.fromCodigo(request.idTipoDocumento());
         	existingHuesped.setTipoDocumento(tipoDocumento);
         }
         

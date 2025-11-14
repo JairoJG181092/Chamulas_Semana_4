@@ -1,4 +1,4 @@
-package com.chamulas.reservaciones.services;
+	package com.chamulas.reservaciones.services;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -11,6 +11,7 @@ import com.chamulas.commons.clients.HabitacionClient;
 import com.chamulas.commons.dto.HabitacionResponse;
 import com.chamulas.commons.dto.ReservaRequest;
 import com.chamulas.commons.dto.ReservaResponse;
+import com.chamulas.commons.enums.EstadoHabitacion;
 import com.chamulas.commons.enums.EstadoRegistro;
 import com.chamulas.commons.enums.EstadoReserva;
 import com.chamulas.commons.exceptions.EntidadRelacionadaException;
@@ -71,6 +72,7 @@ public class ReservaServiceImpl implements ReservaService {
         double total = noches * precioPorNoche;
         reservacion.setNoches((long) noches);
         reservacion.setTotal(total);
+        reservacion.setEstadoRegistro(EstadoRegistro.ACTIVO);
         
         // Guardar reservación
         Reservacion reservaGuardada = reservasRepository.save(reservacion);
@@ -138,6 +140,8 @@ public class ReservaServiceImpl implements ReservaService {
         log.info("Reserva eliminada exitosamente: {}", id);
     }
 
+    // CAMBIAR EL ESTADO DE LA RESERVACION A EN_CURSO
+    // CAMBIAR ESTADO HABITACION
     @Override
     @Transactional
     public ReservaResponse realizarAcceso(Long id) {
@@ -150,6 +154,9 @@ public class ReservaServiceImpl implements ReservaService {
         }
         
         reservacion.setEstado(EstadoReserva.EN_CURSO);
+        
+        // CAMBIANDO EL ESTADO DE HABITACION POR MEDIO DE FEIGN CLIENT
+        habitacionClient.actualizarEstadoHabitacion(reservacion.getHabitacionId());
         
         Reservacion reservaActualizada = reservasRepository.save(reservacion);
         log.info("Check-in realizado para reserva ID: {}", id);
@@ -170,6 +177,10 @@ public class ReservaServiceImpl implements ReservaService {
         
         reservacion.setEstado(EstadoReserva.FINALIZADA);
         
+     // CAMBIANDO EL ESTADO DE HABITACION POR MEDIO DE FEIGN CLIENT
+        habitacionClient.actualizarEstadoLimpieza(reservacion.getHabitacionId());
+        
+        
         Reservacion reservaActualizada = reservasRepository.save(reservacion);
         log.info("Check-out realizado para reserva ID: {}", id);
         
@@ -183,11 +194,21 @@ public class ReservaServiceImpl implements ReservaService {
         Reservacion reservacion = reservasRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Reserva no encontrada con ID: " + id));
         
+     // CUANDO LA RESERVA SE CANCELA ENTES DEL CHECK-IN, EL ESTADO DE EN_CURSO, CODIGO 2, INDICA QUE FUE CANCELADA ANTES QUE EL CHECK-IN
+        if(reservacion.getEstado().getCodigo() >= 2) {
+        	throw new IllegalArgumentException("Error, no se puede cancelar la reservacion, despues del check-in");
+        }
+        
+        
         if (!permiteCancelacion(reservacion.getEstado())) {
             throw new IllegalArgumentException("No se pueden cancelar reservas en estado: " + reservacion.getEstado());
         }
         
         reservacion.setEstado(EstadoReserva.CANCELADA);
+        
+        
+     // CAMBIANDO EL ESTADO DE HABITACION POR MEDIO DE FEIGN CLIENT, CUANDO SE COMPRUEBA QUE EL ESTADO DE LA RESERVA ES INFERIOR A EN CURSO
+        habitacionClient.actualizarEstadoDisponible(reservacion.getHabitacionId());
         
         Reservacion reservaActualizada = reservasRepository.save(reservacion);
         log.info("Reserva cancelada ID: {}", id);
@@ -222,34 +243,63 @@ public class ReservaServiceImpl implements ReservaService {
     }
     
     private void validarDisponibilidad(Long habitacionId, LocalDateTime fechaEntrada, LocalDateTime fechaSalida) {
-        List<EstadoReserva> estadoOcupado = Arrays.asList(
-                EstadoReserva.CONFIRMADA,
-                EstadoReserva.EN_CURSO
-        );
+        // 0) Obtener habitación
+        HabitacionResponse habitacion = habitacionClient.obtenerHabitacionPorId(habitacionId);
+        if (habitacion == null) {
+            throw new EntidadRelacionadaException("Habitación no encontrada: " + habitacionId);
+        }
+
+        // 1) Validar estado de la habitación (enum)
+        EstadoHabitacion estado = EstadoHabitacion.fromCodigo(habitacion.idEstado()); // si devuelve enum
+        if (estadosHabitacionProhibidos().contains(estado)) {
+            throw new EntidadRelacionadaException("La habitación " + habitacionId + " no está disponible. Estado: " + estado);
+        }
+
+        // 2) Validar solapamiento con reservas existentes
+        List<EstadoReserva> estadosOcupado = Arrays.asList(EstadoReserva.CONFIRMADA, EstadoReserva.EN_CURSO);
         List<Reservacion> reservasConflictivas = reservasRepository.findReservasConflictivas(
-            habitacionId, fechaEntrada, fechaSalida, estadoOcupado);
-        
-        if(!reservasConflictivas.isEmpty()) {
-            throw new EntidadRelacionadaException("La habitacion no esta disponible para las fechas seleccionadas ");
+                habitacionId, fechaEntrada, fechaSalida, estadosOcupado);
+
+        if (!reservasConflictivas.isEmpty()) {
+            throw new EntidadRelacionadaException("La habitación no está disponible para las fechas seleccionadas");
         }
     }
     
-    private void validarDisponibilidadParaModificar(Long habitacionId, LocalDateTime fechaEntrada, 
-    		LocalDateTime fechaSalida, Long reservaId) {
-        List<EstadoReserva> estadoOcupado = Arrays.asList(
+    private void validarDisponibilidadParaModificar(
+            Long habitacionId,
+            LocalDateTime fechaEntrada,
+            LocalDateTime fechaSalida,
+            Long reservaId
+    ) {
+        HabitacionResponse habitacion = habitacionClient.obtenerHabitacionPorId(habitacionId);
+        if (habitacion == null) {
+            throw new EntidadRelacionadaException("Habitación no encontrada: " + habitacionId);
+        }
+
+        EstadoHabitacion estado = EstadoHabitacion.fromCodigo(habitacion.idEstado());
+        if (estadosHabitacionProhibidos().contains(estado)) {
+            throw new EntidadRelacionadaException(
+                "La habitación " + habitacionId + " no está disponible. Estado actual: " + estado
+            );
+        }
+
+        List<EstadoReserva> estadosOcupado = Arrays.asList(
                 EstadoReserva.CONFIRMADA,
                 EstadoReserva.EN_CURSO
         );
+
         List<Reservacion> reservasConflictivas = reservasRepository.findReservasConflictivas(
-            habitacionId, fechaEntrada, fechaSalida, estadoOcupado);
-        
-        // Filtrar la reservación actual
+                habitacionId, fechaEntrada, fechaSalida, estadosOcupado
+        );
+
         reservasConflictivas = reservasConflictivas.stream()
                 .filter(r -> !r.getId().equals(reservaId))
                 .toList();
-        
-        if(!reservasConflictivas.isEmpty()) {
-            throw new EntidadRelacionadaException("La habitacion no esta disponible para las nuevas fechas seleccionadas");
+
+        if (!reservasConflictivas.isEmpty()) {
+            throw new EntidadRelacionadaException(
+                "La habitación no está disponible para las nuevas fechas seleccionadas"
+            );
         }
     }
     
@@ -262,13 +312,28 @@ public class ReservaServiceImpl implements ReservaService {
 
 	@Override
 	public Boolean hasHabitacion(Long idHabitacion) {
-		// TODO Auto-generated method stub
-		return null;
+		return reservasRepository.existsByHabitacionIdAndEstadoIn(idHabitacion, estadosReservas());
 	}
 
 	@Override
 	public Boolean hasHuesped(Long idHuesped) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	
+
+	private List<EstadoReserva> estadosReservas(){
+		return Arrays.asList(EstadoReserva.CONFIRMADA, EstadoReserva.EN_CURSO);
+	}
+	
+	
+	private List<EstadoHabitacion> estadosHabitacionProhibidos() {
+	    return Arrays.asList(
+	        EstadoHabitacion.OCUPADA,
+	        EstadoHabitacion.LIMPIEZA,
+	        EstadoHabitacion.MANTENIMIENTO,
+	        EstadoHabitacion.RESERVADA
+	    );
 	}
 }

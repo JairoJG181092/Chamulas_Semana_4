@@ -41,4 +41,13 @@ public interface ReservasRepository extends JpaRepository<Reservacion, Long> {
     
  // Encontrar un huesped por id y con estado activo
   	Optional<Reservacion> findByIdAndEstadoRegistro(Long id, EstadoRegistro estado);
+  	
+  	
+  	// Comprobar si existe una habitacion con la reservacion en estado En_curso y confirmada
+  	boolean existsByHabitacionIdAndEstadoIn(Long id, List<EstadoReserva> estados);
+  	
+  	
+  	
+  	
+  	
 }
