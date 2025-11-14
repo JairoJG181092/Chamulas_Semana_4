@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.server.resource.authentication.Reacti
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 
+
 @Configuration
 public class SecurityConfig {
 
@@ -55,6 +56,7 @@ public class SecurityConfig {
 		jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
 		return new ReactiveJwtAuthenticationConverterAdapter(jwtAuthenticationConverter);
 	}
+	
 	
 }
 

@@ -27,6 +27,7 @@ public class Habitacion {
     @NotNull(message = "El número de habitación es obligatorio")
     @Positive(message = "El número de habitación debe ser mayor a 0")
     @Column(nullable = false, unique = true)
+   
     private Long numero;
     
     @NotNull(message = "El tipo de habitación es obligatorio")
@@ -60,4 +61,5 @@ public class Habitacion {
 	private EstadoRegistro estadoRegistro;
     
 }
+//actualizado 10-11-25
     
