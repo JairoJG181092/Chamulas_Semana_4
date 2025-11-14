@@ -15,9 +15,6 @@ public record HabitacionRequest(
 	        @Positive(message = "El id del tipo de habitación debe ser positivo")
 		    Long idTipo,
 		    
-		    @Size(max = 500, message = "La descripción no puede exceder los 500 caracteres")
-		    String descripcion,
-		    
 		    @NotNull(message = "El precio es obligatorio")
 		    @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0")
 		    Double precio,

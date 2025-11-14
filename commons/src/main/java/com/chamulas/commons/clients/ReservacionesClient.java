@@ -15,5 +15,10 @@ public interface ReservacionesClient {
 	// HUESPED
 	@GetMapping("/existe/huesped/{id}")
 	boolean hasHuesped(@PathVariable Long id);
+	
+	
+	
+	// COMPROBAR SI LA HABITACION TIENE UNA RESERVACION EN CURSO
+	
 
 }
