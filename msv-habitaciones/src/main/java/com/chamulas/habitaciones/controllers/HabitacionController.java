@@ -7,13 +7,11 @@ import com.chamulas.commons.controllers.CommonController;
 import com.chamulas.commons.enums.EstadoHabitacion;
 import com.chamulas.commons.enums.TipoHabitacion;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-//@RequestMapping("/api/habitaciones")
 @Slf4j
 public class HabitacionController extends CommonController<HabitacionRequest, HabitacionResponse, HabitacionService> {
 
@@ -41,11 +39,28 @@ public class HabitacionController extends CommonController<HabitacionRequest, Ha
         List<HabitacionResponse> habitaciones = service.findByEstado(estado);
         return ResponseEntity.ok(habitaciones);
     }
+    
+    
+    @PutMapping("/{idHabitacion}/estado-ocupada")
+   	public ResponseEntity<HabitacionResponse> actualizarEstadoHabitacion(@PathVariable Long idHabitacion){
+       	return ResponseEntity.ok(service.actualizarEstadoHabitacion(idHabitacion));
+       }
+    
+    
+    @PutMapping("/{idHabitacion}/estado-limpieza")
+   	public ResponseEntity<HabitacionResponse> actualizarEstadoLimpieza(@PathVariable Long idHabitacion){
+       	return ResponseEntity.ok(service.actualizarEstadoLimpieza(idHabitacion));
+       }
+    
+    @PutMapping("/{idHabitacion}/estado-disponible")
+	public ResponseEntity<HabitacionResponse> actualizarEstadoDisponible(@PathVariable Long idHabitacion){
+		return ResponseEntity.ok(service.actualizarEstadoDisponible(idHabitacion));
+	}
+
 
     @GetMapping("/disponibles")
     public ResponseEntity<List<HabitacionResponse>> findDisponibles() {
         log.info("Buscando habitaciones disponibles");
-        List<HabitacionResponse> habitaciones = service.findDisponibles();
-        return ResponseEntity.ok(habitaciones);
+        return ResponseEntity.ok(service.findDisponibles());
     }
 }

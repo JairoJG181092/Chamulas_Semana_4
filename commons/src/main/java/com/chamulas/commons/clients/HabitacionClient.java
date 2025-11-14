@@ -4,10 +4,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
-
 import com.chamulas.commons.dto.HabitacionResponse;
-import com.chamulas.commons.dto.HuespedResponse;
-import com.chamulas.commons.enums.EstadoHabitacion;
 
 @FeignClient(name="msv-habitaciones")
 public interface HabitacionClient {
@@ -15,9 +12,22 @@ public interface HabitacionClient {
 	@GetMapping("/{id}")
 	HabitacionResponse obtenerHabitacionPorId(@PathVariable Long id);
 	
-	@PutMapping("/{idHabitacion}/estado/{idEstado}")
+	
+	// ESTO ESTA MAL
+	@PutMapping("/{idHabitacion}/estado-ocupada")
 	HabitacionResponse actualizarEstadoHabitacion(
-			@PathVariable Long idHabitacion,
-			@PathVariable EstadoHabitacion estado
+			@PathVariable Long idHabitacion
+			);
+	
+	
+	@PutMapping("/{idHabitacion}/estado-limpieza")
+	HabitacionResponse actualizarEstadoLimpieza(
+			@PathVariable Long idHabitacion
+			);
+	
+	
+	@PutMapping("/{idHabitacion}/estado-disponible")
+	HabitacionResponse actualizarEstadoDisponible(
+			@PathVariable Long idHabitacion
 			);
 }

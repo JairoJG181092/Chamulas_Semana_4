@@ -1,6 +1,7 @@
 package com.chamulas.habitaciones.entities;
 
 import com.chamulas.commons.enums.EstadoHabitacion;
+import com.chamulas.commons.enums.EstadoRegistro;
 import com.chamulas.commons.enums.TipoHabitacion;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -53,6 +54,11 @@ public class Habitacion {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private EstadoHabitacion estado = EstadoHabitacion.DISPONIBLE;
+    
+    
+    @Enumerated(EnumType.STRING)
+	@Column(name = "ESTADO_REGISTRO")
+	private EstadoRegistro estadoRegistro;
     
 }
 //actualizado 10-11-25

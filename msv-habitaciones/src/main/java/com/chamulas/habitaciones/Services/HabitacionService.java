@@ -1,4 +1,3 @@
-// HabitacionService.java
 package com.chamulas.habitaciones.services;
 
 import com.chamulas.commons.dto.HabitacionRequest;
@@ -15,4 +14,9 @@ public interface HabitacionService extends CommonService<HabitacionRequest, Habi
     List<HabitacionResponse> findByTipo(TipoHabitacion tipo);
     List<HabitacionResponse> findByEstado(EstadoHabitacion estado);
     List<HabitacionResponse> findDisponibles();
+	HabitacionResponse actualizarEstadoHabitacion(Long idHabitacion);
+	HabitacionResponse actualizarEstadoLimpieza(Long idHabitacion);
+	HabitacionResponse actualizarEstadoDisponible(Long idHabitacion);
+
+
 }

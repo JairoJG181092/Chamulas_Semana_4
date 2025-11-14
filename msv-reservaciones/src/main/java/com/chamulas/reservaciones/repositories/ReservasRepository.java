@@ -1,12 +1,12 @@
 package com.chamulas.reservaciones.repositories;
 
 import com.chamulas.reservaciones.entities.Reservacion;
+import com.chamulas.commons.enums.EstadoRegistro;
 import com.chamulas.commons.enums.EstadoReserva;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -38,4 +38,16 @@ public interface ReservasRepository extends JpaRepository<Reservacion, Long> {
     Long countByHabitacionIdAndEstado(
             @Param("habitacionId") Long habitacionId,
             @Param("estado") EstadoReserva estado);
+    
+ // Encontrar un huesped por id y con estado activo
+  	Optional<Reservacion> findByIdAndEstadoRegistro(Long id, EstadoRegistro estado);
+  	
+  	
+  	// Comprobar si existe una habitacion con la reservacion en estado En_curso y confirmada
+  	boolean existsByHabitacionIdAndEstadoIn(Long id, List<EstadoReserva> estados);
+  	
+  	
+  	
+  	
+  	
 }

@@ -6,6 +6,9 @@ import com.chamulas.huespedes.repositories.HuespedRepository;
 import com.chamulas.huespedes.mappers.HuespedMapper;
 import com.chamulas.commons.dto.HuespedRequest;
 import com.chamulas.commons.dto.HuespedResponse;
+import com.chamulas.commons.enums.EstadoRegistro;
+import com.chamulas.commons.enums.Nacionalidad;
+import com.chamulas.commons.enums.TipoDocumento;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,40 +27,60 @@ public class HuespedServiceImpl implements HuespedService {
         this.huespedMapper = huespedMapper;
     }
 
+    
+    // LISTAR SOLO LOS HUESPEDES ACTIVOS
     @Override
     @Transactional(readOnly = true)
     public List<HuespedResponse> listar() {
         log.info("Listando todos los huéspedes");
-        return huespedMapper.toResponseList(huespedRepository.findAll());
+        return huespedRepository.findByEstadoRegistro(EstadoRegistro.ACTIVO)
+        		.stream()
+        		.map(huespedMapper::entityToResponse)
+        		.toList();
+    }
+    
+    
+    // LISTAR TODOS LOS HUESPEDES ACTIVOS
+    @Transactional(readOnly = true)
+    public List<HuespedResponse> listAll() {
+        log.info("Listando todos los huéspedes");
+        return huespedRepository.findAll()
+        		.stream()
+        		.map(huespedMapper::entityToResponse)
+        		.toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public HuespedResponse obtenerPorId(Long id) {
         log.info("Obteniendo huésped con ID: {}", id);
-        Huesped huesped = huespedRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Huésped no encontrado con ID: " + id));
-        return huespedMapper.toResponse(huesped);
+        Huesped huesped = getHuespedOrThrow(id);
+        
+        return huespedMapper.entityToResponse(huesped);
     }
 
     @Override
     @Transactional
     public HuespedResponse registrar(HuespedRequest request) {
-        log.info("Registrando nuevo huésped con email: {}", request.getEmail());
+        log.info("Registrando nuevo huésped con email: {}", request.email());
         
-        if (huespedRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Ya existe un huésped con el email: " + request.getEmail());
+        if (huespedRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("Ya existe un huésped con el email: " + request.email());
         }
         
-        if (huespedRepository.existsByTelefono(request.getTelefono())) {
-            throw new IllegalArgumentException("Ya existe un huésped con el teléfono: " + request.getTelefono());
+        if (huespedRepository.existsByTelefono(request.telefono())) {
+            throw new IllegalArgumentException("Ya existe un huésped con el teléfono: " + request.telefono());
         }
         
-        Huesped huesped = huespedMapper.toEntity(request);
+        TipoDocumento tipoDocumento = TipoDocumento.fromCodigo(request.idTipoDocumento());
+        Nacionalidad nacionalidad = Nacionalidad.fromCodigo(request.idNacionalidad());
+         
+        Huesped huesped = huespedMapper.requestToEntity(request, tipoDocumento, nacionalidad);
+        huesped.setEstadoRegistro(EstadoRegistro.ACTIVO);
         Huesped savedHuesped = huespedRepository.save(huesped);
         log.info("Huésped registrado exitosamente con ID: {}", savedHuesped.getId());
         
-        return huespedMapper.toResponse(savedHuesped);
+        return huespedMapper.entityToResponse(savedHuesped);
     }
 
     @Override
@@ -65,43 +88,56 @@ public class HuespedServiceImpl implements HuespedService {
     public HuespedResponse actualizar(HuespedRequest request, Long id) {
         log.info("Actualizando huésped con ID: {}", id);
         
-        Huesped existingHuesped = huespedRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Huésped no encontrado con ID: " + id));
+        Huesped existingHuesped = getHuespedOrThrow(id);
         
-        if (huespedRepository.existsByEmail(request.getEmail()) && 
-            !existingHuesped.getEmail().equals(request.getEmail())) {
-            throw new IllegalArgumentException("Ya existe otro huésped con el email: " + request.getEmail());
+        if (huespedRepository.existsByEmail(request.email()) && 
+            !existingHuesped.getEmail().equals(request.email())) {
+            throw new IllegalArgumentException("Ya existe otro huésped con el email: " + request.email());
         }
         
-        if (huespedRepository.existsByTelefono(request.getTelefono()) && 
-            !existingHuesped.getTelefono().equals(request.getTelefono())) {
-            throw new IllegalArgumentException("Ya existe otro huésped con el teléfono: " + request.getTelefono());
+        if (huespedRepository.existsByTelefono(request.telefono()) && 
+            !existingHuesped.getTelefono().equals(request.telefono())) {
+            throw new IllegalArgumentException("Ya existe otro huésped con el teléfono: " + request.telefono());
         }
+        
+        boolean existingDocumento = !existingHuesped.getTipoDocumento().getCodigo().equals(request.idTipoDocumento());
+        boolean existingNacionalidad = !existingHuesped.getNacionalidad().getCodigo().equals(request.idNacionalidad());
+        
+        if(existingDocumento) {
+        	TipoDocumento tipoDocumento = TipoDocumento.fromCodigo(request.idTipoDocumento());
+        	existingHuesped.setTipoDocumento(tipoDocumento);
+        }
+        
+        if(existingNacionalidad) {
+        	Nacionalidad nacionalidad = Nacionalidad.fromCodigo(request.idNacionalidad());
+        	existingHuesped.setNacionalidad(nacionalidad);
+        }
+        
         
         // Actualizar campos
-        existingHuesped.setNombre(request.getNombre());
-        existingHuesped.setApellido(request.getApellido());
-        existingHuesped.setEmail(request.getEmail());
-        existingHuesped.setTelefono(request.getTelefono());
-        existingHuesped.setTipoDocumento(request.getTipoDocumento());
-        existingHuesped.setNacionalidad(request.getNacionalidad());
+        existingHuesped.setNombre(request.nombre());
+        existingHuesped.setApellido(request.apellido());
+        existingHuesped.setEmail(request.email());
+        existingHuesped.setTelefono(request.telefono());
         
         Huesped updatedHuesped = huespedRepository.save(existingHuesped);
         log.info("Huésped actualizado exitosamente con ID: {}", updatedHuesped.getId());
         
-        return huespedMapper.toResponse(updatedHuesped);
+        return huespedMapper.entityToResponse(updatedHuesped);
     }
 
     @Override
     @Transactional
     public void eliminar(Long id) {
+    	Huesped huesped = getHuespedOrThrow(id);
+    	
         log.info("Eliminando huésped con ID: {}", id);
         
         if (!huespedRepository.existsById(id)) {
             throw new NoSuchElementException("Huésped no encontrado con ID: " + id);
         }
         
-        huespedRepository.deleteById(id);
+        huesped.setEstadoRegistro(EstadoRegistro.ELIMINADO);
         log.info("Huésped eliminado exitosamente con ID: {}", id);
     }
 
@@ -111,7 +147,7 @@ public class HuespedServiceImpl implements HuespedService {
         log.info("Buscando huésped con email: {}", email);
         Huesped huesped = huespedRepository.findByEmail(email)
                 .orElseThrow(() -> new NoSuchElementException("Huésped no encontrado con email: " + email));
-        return huespedMapper.toResponse(huesped);
+        return huespedMapper.entityToResponse(huesped);
     }
 
     @Override
@@ -120,6 +156,16 @@ public class HuespedServiceImpl implements HuespedService {
         log.info("Buscando huésped con teléfono: {}", telefono);
         Huesped huesped = huespedRepository.findByTelefono(telefono)
                 .orElseThrow(() -> new NoSuchElementException("Huésped no encontrado con teléfono: " + telefono));
-        return huespedMapper.toResponse(huesped);
+        return huespedMapper.entityToResponse(huesped);
     }
+    
+    
+    
+    @Transactional(readOnly = true)
+   	private Huesped getHuespedOrThrow(Long id) {
+   		log.info("Buscando Huesped con el id: ", id);
+   		return huespedRepository.findByIdAndEstadoRegistro(id, EstadoRegistro.ACTIVO)
+   				.orElseThrow(()-> new NoSuchElementException("Huesped no encontrada con el id: " + id));
+   	}
+
 }
